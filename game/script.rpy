@@ -215,6 +215,10 @@ label start:
             call pong_minigame
             e "Impressive volleys. The rune-ball tracking shows off our physics layer beautifully."
 
+        "Skirmish in Space (SpaceRebellion)":
+            call start_spacerebellion
+            e "That was a stellar display. We'll log your dogfighting telemetry."
+
         "Skip the diversions for now":
             e "Very well—we can revisit the sigil arrays, serpent drills, grid trials, and pong table whenever the pitch needs more sparkle."
 
