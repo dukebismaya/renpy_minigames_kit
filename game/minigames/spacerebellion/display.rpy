@@ -131,6 +131,14 @@ init python:
     class SpaceRebellionDisplayable(Displayable):
         """Custom displayable that feeds the pygame-driven engine each frame."""
 
+        @staticmethod
+        def _serialize_ship_profile(profile):
+            if not profile:
+                return None
+            serialized = dict(profile)
+            serialized.pop("_sprite_surface", None)
+            return serialized
+
         def __init__(self, width=960, height=600, seed=None, ship_profile=None, wave_limit=None, **kwargs):
             super(SpaceRebellionDisplayable, self).__init__(**kwargs)
             self.width = int(width)
@@ -145,6 +153,22 @@ init python:
             if self.ship_profile:
                 self.engine.set_ship_profile(self.ship_profile)
             self.set_wave_limit(wave_limit)
+
+        def __getstate__(self):
+            return {
+                "width": self.width,
+                "height": self.height,
+                "ship_profile": self._serialize_ship_profile(self.ship_profile),
+                "wave_limit": self.wave_limit,
+            }
+
+        def __setstate__(self, state):
+            self.__init__(
+                width=state.get("width", 960),
+                height=state.get("height", 600),
+                ship_profile=state.get("ship_profile"),
+                wave_limit=state.get("wave_limit"),
+            )
 
         def reset(self):
             self.engine.reset()
