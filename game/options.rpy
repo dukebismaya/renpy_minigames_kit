@@ -150,7 +150,7 @@ define config.save_directory = "renpy_minigames_kit-1764476275"
 ##
 ## The icon displayed on the taskbar or dock.
 
-define config.window_icon = "gui/window_icon.png"
+define config.window_icon = "game_icon.png"
 
 init -1 python:
     config.keymap["screenshot"] = ["alt_K_s"]

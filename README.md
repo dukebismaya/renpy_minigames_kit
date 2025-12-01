@@ -36,3 +36,7 @@ This kit is meant to help devs implement mini games into their games and it took
 ## Author
 - **Knox Emberlyn** — also known as **Duke Knox**. Reach out if you would like to collaborate or showcase what you built with the kit.
 - **Contact** — Discord `@dukeknox` or ping contributor [dukebismaya](https://github.com/dukebismaya) on GitHub.
+
+## Music are licensed from PIXABAY and CHOSIC
+
+### Main Music by <a href="https://pixabay.com/users/leonellcassio-2264996/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=10450">Leonell Cassio</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=10450">Pixabay</a>

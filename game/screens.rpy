@@ -359,8 +359,10 @@ screen main_menu():
 
     tag menu
 
-    add gui.main_menu_background
-    add Solid("#000")
+    add gui.main_menu_background size (1920, 1080)
+    add Solid("#000") alpha 0.7
+
+    # add "game_icon.png" xalign 0.5 yalign 0.1 size (512, 512)
 
     text "Ren'Py MINI-GAMES KIT" style "animated_menu_title" at main_menu_vibrate
     text "Developed by Knox Emberlyn" style "animated_menu_subtitle" slow True slow_cps 25 at main_menu_subtle
@@ -442,35 +444,52 @@ style animated_menu_title:
     yalign 0.35
     color "#7af7ff"
     outlines [(2, "#02141b", 0, 0)]
+    font "fonts/Dune_Rise.otf"
+    kerning 1
 
 style animated_menu_subtitle:
     size 28
     textalign 0.5
     xalign 0.5
-    yalign 0.48
+    yalign 1.0
     color "#9de1d9"
+    font "fonts/Dune_Rise.otf"
+    kerning 2
 
 style animated_menu_button:
     xalign 0.5
-    xminimum 400
-    padding (18, 18)
-    background Solid("#05162690")
-    hover_background Solid("#0a2c4ed0")
+    xminimum 480
+    padding (22, 22)
+    background Frame(Solid("#050d1999"), 24, 24, 24, 24)
+    hover_background Frame(Solid("#0f2644d0"), 24, 24, 24, 24)
+    insensitive_background Frame(Solid("#09101f66"), 24, 24, 24, 24)
+    foreground Solid("#9de1d920")
+    hover_foreground Solid("#c2fff044")
 
 style animated_menu_button_text:
     size 26
     color "#d9faff"
     hover_color "#68faff"
     slow_cps 0
+    font "fonts/Dune_Rise.otf"
+    kerning 3
+    outlines [(1, "#01060b", 0, 0)]
 
 
 transform menu_button_hover_anim:
     on show:
-        zoom 1.0
+        alpha 0.0
+        yoffset 12
+        zoom 0.98
+        linear 0.35 alpha 1.0 yoffset 0 zoom 1.0
     on hover:
-        linear 0.25 zoom 1.04
+        block:
+            easeout 0.2 zoom 1.06 yoffset -6
+            linear 0.25 zoom 1.02 yoffset -2
+            linear 0.25 zoom 1.06 yoffset -6
+            repeat
     on idle:
-        linear 0.2 zoom 1.0
+        linear 0.25 zoom 1.0 yoffset 0
 
 
 ## Game Menu screen ############################################################
