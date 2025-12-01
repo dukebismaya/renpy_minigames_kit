@@ -203,10 +203,6 @@ label start:
             call tic_tac_toe_minigame
             e "Simple, but it convinces the nobles that our AI can duel on even the smallest grid."
         
-        "Test tic-tac-toe":
-            call tic_tac_toe_line_test
-            e ""
-
         "Preview the circle displayable":
             call show_circle_demo
             e "Custom renderables like that circle can be slotted into any HUD or screen with just one line."
@@ -216,7 +212,7 @@ label start:
             e "Impressive volleys. The rune-ball tracking shows off our physics layer beautifully."
 
         "Skirmish in Space (SpaceRebellion)":
-            call start_spacerebellion
+            call space_rebellion_minigame
             e "That was a stellar display. We'll log your dogfighting telemetry."
 
         "Skip the diversions for now":
