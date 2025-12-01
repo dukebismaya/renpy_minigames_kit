@@ -9,12 +9,15 @@ A plug-and-play bundle of Ren'Py-friendly minigames meant to spice up visual nov
 - **Sigil Matching** – Pattern-matching puzzle featuring streak bonuses and score tracking.
 - **Snake** – Classic growth gameplay with wrap/edge options for easy tweaking.
 - **Tic-Tac-Toe** – Local multiplayer or simple AI opponent with clean UI hooks.
+- **Space Rebellion** – Wave-based shooter prototype with power-up drops and parallax backgrounds.
 
 ## Kit Highlights
 - Drop-in ready Ren'Py `.rpy` files plus supporting assets.
 - Shared helper utilities for menus, HUD elements, and notifications.
 - Easily customizable constants for speed, score values, and difficulty knobs.
 - Clear folder structure so new minigames can live alongside the existing set.
+- **Split-Open/Close Transitions** – built-in animations to introduce or exit minigames with extra polish.
+- **Circle & Arc Drawing Helpers** – lightweight canvas utilities ideal for radial timers, gauges, and hotspot highlights.
 
 ## Roadmap
 More minigames are planned. If you have a prototype or mechanic you would like to see here, open an issue or pitch it in a discussion—this kit is meant to grow over time.
