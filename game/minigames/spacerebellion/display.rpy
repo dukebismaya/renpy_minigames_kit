@@ -1,3 +1,6 @@
+# Copyright (C) 2025 Bismaya Jyoti Dalei. All rights reserved.
+# This file is part of Space Rebellion, a mini-game for Ren'Py.
+
 init python:
     import os
     import copy
@@ -150,9 +153,12 @@ init python:
             self._last_st = None
             self.ship_profile = ship_profile or space_rebellion_default_ship()
             self.wave_limit = None
+            self._mouse_aim_mode = False
             if self.ship_profile:
                 self.engine.set_ship_profile(self.ship_profile)
             self.set_wave_limit(wave_limit)
+            self._saved_seed = seed
+            self._recenter_pointer()
 
         def __getstate__(self):
             return {
@@ -160,6 +166,8 @@ init python:
                 "height": self.height,
                 "ship_profile": self._serialize_ship_profile(self.ship_profile),
                 "wave_limit": self.wave_limit,
+                "seed": self._saved_seed,
+                "mouse_aim": self._mouse_aim_mode,
             }
 
         def __setstate__(self, state):
@@ -168,7 +176,10 @@ init python:
                 height=state.get("height", 600),
                 ship_profile=state.get("ship_profile"),
                 wave_limit=state.get("wave_limit"),
+                seed=state.get("seed"),
             )
+            self._mouse_aim_mode = bool(state.get("mouse_aim", False))
+            self._recenter_pointer()
 
         def reset(self):
             self.engine.reset()
@@ -181,6 +192,8 @@ init python:
             self.engine.set_keyboard_fire(False)
             self.engine.set_mouse_fire(False)
             self.set_wave_limit(self.wave_limit)
+            self._mouse_aim_mode = False
+            self._recenter_pointer()
 
         def set_ship_profile(self, profile):
             if profile is None:
@@ -221,11 +234,15 @@ init python:
             elif ev.type == pygame.MOUSEMOTION:
                 local_x = ev.pos[0] - x
                 local_y = ev.pos[1] - y
-                self.engine.set_pointer((local_x, local_y), use_mouse=True)
+                if 0 <= local_x <= self.width and 0 <= local_y <= self.height:
+                    self.engine.set_pointer((local_x, local_y), use_mouse=self._mouse_aim_mode)
             elif ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
-                self.engine.set_pointer((ev.pos[0] - x, ev.pos[1] - y), use_mouse=True)
-                self.engine.set_mouse_fire(True)
-                handled = True
+                local_x = ev.pos[0] - x
+                local_y = ev.pos[1] - y
+                if 0 <= local_x <= self.width and 0 <= local_y <= self.height:
+                    self.engine.set_pointer((local_x, local_y), use_mouse=self._mouse_aim_mode)
+                    self.engine.set_mouse_fire(True)
+                    handled = True
             elif ev.type == pygame.MOUSEBUTTONUP and ev.button == 1:
                 self.engine.set_mouse_fire(False)
                 handled = True
@@ -245,12 +262,27 @@ init python:
             elif ev.key == pygame.K_SPACE:
                 self.engine.set_keyboard_fire(pressed)
                 return True
+            elif ev.key == pygame.K_m and pressed:
+                self._mouse_aim_mode = not self._mouse_aim_mode
+                self._sync_pointer_mode()
+                return True
             else:
                 return False
             dx = float(self._input_state["right"]) - float(self._input_state["left"])
             dy = float(self._input_state["down"]) - float(self._input_state["up"])
             self.engine.set_direction(dx, dy)
             return True
+
+        def _recenter_pointer(self):
+            self.engine.set_pointer((self.width / 2, self.height / 2), use_mouse=self._mouse_aim_mode)
+
+        def _sync_pointer_mode(self):
+            pointer = getattr(self.engine, "pointer", None)
+            if pointer is not None:
+                coords = (pointer.x, pointer.y)
+            else:
+                coords = (self.width / 2, self.height / 2)
+            self.engine.set_pointer(coords, use_mouse=self._mouse_aim_mode)
 
 
     def _space_rebellion_asset_root():
@@ -506,83 +538,154 @@ screen space_rebellion_minigame(displayable=None):
 
     add Solid("#00050cdd")
 
+    $ wave_label = "Wave {}".format(stats["wave"]) if stats["wave"] else "Deployment"
+    $ limit_label = "Endless" if stats.get("wave_limit") in (None, 0) else "{} Waves".format(stats.get("wave_limit"))
+    $ mission_goal = "endless waves" if stats.get("wave_limit") in (None, 0) else "up to {0} waves".format(stats["wave_limit"])
+    $ health_ratio = stats["health"] / float(stats["max_health"] or 1)
+    $ health_color = "#ffaba5" if health_ratio < 0.35 else "#b8ffcb"
+    $ info_entries = [
+        ("Score", "{0:,}".format(stats["score"]), "#ffffff"),
+        ("Progress", wave_label, "#9ec8ff"),
+        ("Target", limit_label, "#8bf3ff"),
+        ("Health", "{}/{}".format(stats["health"], stats["max_health"]), health_color),
+        ("Ship", "{}".format(stats["ship_name"]), "#9ec8ff"),
+    ]
+    if stats.get("ship_role"):
+        $ info_entries.append(("Role", stats.get("ship_role"), "#cdd5e5"))
+
+    $ effect_entries = []
+    if stats["rapid_fire"] > 0:
+        $ effect_entries.append(("Rapid Fire", "{:.1f}s".format(stats["rapid_fire"]), "#ffe07a"))
+    if stats["double_shot"] > 0:
+        $ effect_entries.append(("Spread Shot", "{:.1f}s".format(stats["double_shot"]), "#ffbcf5"))
+    if stats["shield"] > 0:
+        $ effect_entries.append(("Shield", "{:.1f}s".format(stats["shield"]), "#7cf5d4"))
+    if stats["boss_active"]:
+        $ effect_entries.append(("Boss Active", "", "#ff8d8d"))
+
+    if stats.get("mission_complete"):
+        $ status_header = "Mission Complete"
+        $ status_color = "#9cf2ff"
+        $ status_copy = "You cleared {0} waves. Collect rewards to extract.".format(max(1, stats["wave"]))
+    elif stats["game_over"]:
+        $ status_header = "Mission Failed"
+        $ status_color = "#ffc8c2"
+        $ status_copy = "Collect your debrief to exit."
+    else:
+        $ status_header = "Mission Active"
+        $ status_color = "#8bf3ff"
+        $ status_copy = "Move with WASD or arrows. Clear {} and grab power-ups.".format(mission_goal)
+
     frame:
         xalign 0.5
         yalign 0.5
-        padding (28, 28)
+        padding (30, 30)
         background Solid("#050912")
 
         vbox:
-            spacing 18
+            spacing 20
             xalign 0.5
 
             text "Space Rebellion" size 54
-            text "Hold Space or Left Mouse Button to fire." size 24 color "#9ec8ff"
-
-            fixed:
-                xsize displayable.width
-                ysize displayable.height
-                add displayable xpos 0 ypos 0
-                if stats["wave_banner"] > 0 and not stats["game_over"]:
-                    $ banner_alpha = min(1.0, stats["wave_banner"] / 2.2)
-                    $ banner_text = "Wave {}".format(stats["wave"]) if stats["wave"] else "Ready"
-                    if stats["boss_active"]:
-                        $ banner_text = "Boss Incoming"
-                    frame:
-                        xalign 0.5
-                        yalign 0.5
-                        padding (36, 18)
-                        background Solid("#0c1f3ed0")
-                        at Transform(alpha=banner_alpha)
-                        text banner_text size 48 color "#ffffff"
-                if stats.get("mission_complete"):
-                    frame:
-                        xalign 0.5
-                        yalign 0.5
-                        padding (48, 32)
-                        background Solid("#050912e6")
-                        vbox:
-                            spacing 16
-                            text "Mission Complete" size 52 color "#9cf2ff"
-                            text "Press Collect Rewards to extract." size 28 color "#dbe3ff"
-                elif stats["game_over"]:
-                    frame:
-                        xalign 0.5
-                        yalign 0.5
-                        padding (48, 32)
-                        background Solid("#050912e6")
-                        vbox:
-                            spacing 16
-                            text "Mission Failed" size 52 color "#ffc8c2"
-                            text "Press Collect Debrief to exit." size 28 color "#dbe3ff"
-
-            $ wave_label = "Wave {}".format(stats["wave"]) if stats["wave"] else "Deployment"
+            text "Hold Space or Left Mouse Button to fire. Press M to toggle mouse aiming." size 24 color "#9ec8ff"
 
             hbox:
-                spacing 40
-                xalign 0.5
-                text "Score: {0:,}".format(stats["score"]) size 32
-                text wave_label size 32
-                text "Health: {}/{}".format(stats["health"], stats["max_health"]) size 32
-                text "Ship: {}".format(stats["ship_name"]) size 32 color "#9ec8ff"
-                $ limit_label = "Endless" if stats.get("wave_limit") in (None, 0) else "{} Waves".format(stats.get("wave_limit"))
-                text "Target: {}".format(limit_label) size 32 color "#8bf3ff"
-                if stats["rapid_fire"] > 0:
-                    text "Rapid Fire {:.1f}s".format(stats["rapid_fire"]) size 32 color "#ffe07a"
-                if stats["double_shot"] > 0:
-                    text "Spread Shot {:.1f}s".format(stats["double_shot"]) size 32 color "#ffbcf5"
-                if stats["shield"] > 0:
-                    text "Shield {:.1f}s".format(stats["shield"]) size 32 color "#7cf5d4"
-                if stats["boss_active"]:
-                    text "Boss Active" size 32 color "#ff8d8d"
+                spacing 28
+                xfill True
 
-            if stats.get("mission_complete"):
-                text "Mission complete! You cleared {0} waves and can extract whenever you're ready.".format(max(1, stats["wave"])) size 26 color "#9cf2ff"
-            elif stats["game_over"]:
-                text "Mission failed. Collect your debrief to exit." size 26 color "#ffaba5"
-            else:
-                $ mission_goal = "endless waves" if stats.get("wave_limit") in (None, 0) else "up to {0} waves".format(stats["wave_limit"])
-                text "Move with WASD or arrows. Clear {0}, grab power-ups, and defeat every fifth-wave boss.".format(mission_goal) size 26 color "#9fc6ff"
+                frame:
+                    background Solid("#030915")
+                    padding (18, 18)
+                    xminimum displayable.width + 36
+                    yminimum displayable.height + 36
+                    has vbox
+                    xalign 0.0
+
+                    fixed:
+                        xsize displayable.width
+                        ysize displayable.height
+                        add displayable xpos 0 ypos 0
+                        if stats["wave_banner"] > 0 and not stats["game_over"]:
+                            $ banner_alpha = min(1.0, stats["wave_banner"] / 2.2)
+                            $ banner_text = "Wave {}".format(stats["wave"]) if stats["wave"] else "Ready"
+                            if stats["boss_active"]:
+                                $ banner_text = "Boss Incoming"
+                            frame:
+                                xalign 0.5
+                                yalign 0.5
+                                padding (36, 18)
+                                background Solid("#0c1f3ed0")
+                                at Transform(alpha=banner_alpha)
+                                text banner_text size 48 color "#ffffff"
+                        if stats.get("mission_complete"):
+                            frame:
+                                xalign 0.5
+                                yalign 0.5
+                                padding (48, 32)
+                                background Solid("#050912e6")
+                                vbox:
+                                    spacing 16
+                                    text "Mission Complete" size 52 color "#9cf2ff"
+                                    text "Press Collect Rewards to extract." size 28 color "#dbe3ff"
+                        elif stats["game_over"]:
+                            frame:
+                                xalign 0.5
+                                yalign 0.5
+                                padding (48, 32)
+                                background Solid("#050912e6")
+                                vbox:
+                                    spacing 16
+                                    text "Mission Failed" size 52 color "#ffc8c2"
+                                    text "Press Collect Debrief to exit." size 28 color "#dbe3ff"
+
+                frame:
+                    background Solid("#050d1f")
+                    padding (18, 18)
+                    xmaximum 380
+
+                    viewport:
+                        ymaximum max(displayable.height, 520)
+                        scrollbars "vertical"
+                        draggable True
+                        mousewheel True
+                        pagekeys True
+                        has vbox
+                        spacing 18
+
+                        text "Telemetry" size 36 color "#9ec8ff"
+
+                        for label, value, color in info_entries:
+                            frame:
+                                background Solid("#0a1525")
+                                padding (10, 8)
+                                vbox:
+                                    spacing 4
+                                    text label size 20 color "#8aa3c7"
+                                    text value size 28 color color
+
+                        frame:
+                            background Solid("#0a1525")
+                            padding (10, 8)
+                            vbox:
+                                spacing 6
+                                text status_header size 22 color status_color
+                                text status_copy size 20 color "#dbe3ff"
+
+                        text "Active Effects" size 26 color "#8bf3ff"
+                        if effect_entries:
+                            for label, value, color in effect_entries:
+                                frame:
+                                    background Solid("#0f1d2f")
+                                    padding (8, 6)
+                                    hbox:
+                                        spacing 6
+                                        text label size 20 color color
+                                        if value:
+                                            text value size 20 color "#ffffff"
+                        else:
+                            text "No active effects" size 20 color "#7b8aa8"
+
+            text status_copy size 24 color status_color
 
             hbox:
                 spacing 20

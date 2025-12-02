@@ -1,5 +1,8 @@
+# Copyright (C) 2025 Bismaya Jyoti Dalei. All rights reserved.
+# This file is part of Space Rebellion, a mini-game for Ren'Py.
+
 init python early:
-    """Space Rebellion mini-game engine implemented with pygame surfaces."""
+    """Space Rebellion mini-game engine."""
 
     import math
     import os

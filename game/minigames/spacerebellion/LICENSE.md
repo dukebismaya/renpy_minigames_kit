@@ -1,6 +1,6 @@
 Creative Commons Attribution 4.0 International License (CC BY 4.0)
 
-Copyright (c) 2025 Knox Emberlyn
+Copyright (c) 2025 Knox Emberlyn & Bismaya Jyoti Dalei
 
 This project is licensed under the Creative Commons Attribution 4.0 
 International License.
@@ -11,8 +11,8 @@ You are free to:
   even commercially.
 
 Under the following terms:
-- Attribution — You MUST give appropriate credit to the original author,
-  Knox Emberlyn.
+- Attribution — You MUST give appropriate credit to the original authors,
+  Knox Emberlyn & Bismaya Jyoti Dalei.
 - You MUST provide a link to the original repository:
   [renpy-minigames-kit](https://github.com/dukebismaya/renpy_minigames_kit)
 - You MUST indicate if changes were made.
