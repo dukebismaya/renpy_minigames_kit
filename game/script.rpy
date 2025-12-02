@@ -1,4 +1,7 @@
 ﻿# Copyright (c) 2025 Knox Emberlyn. Licensed under the MIT License.
+# If you're using any part of this codebase such as the new transitions like _WideningCreditCallable,
+# SplitGateTransition, or the splashscreen, please include this copyright notice and credit Knox & Bismaya in your project.
+
 define e = Character("Eileen")
 
 
@@ -38,6 +41,36 @@ transform splash_tag_anchor:
 transform splash_logo_anchor:
     xalign 0.5
     yalign 0.52
+
+
+init python:
+    from renpy.display.layout import DynamicDisplayable
+
+    class _WideningCreditCallable(object):
+        def __init__(self, text, start_kerning, end_kerning, duration, text_kwargs):
+            self.text = text
+            self.start_kerning = float(start_kerning)
+            self.end_kerning = float(end_kerning)
+            self.duration = float(duration)
+            self.text_kwargs = text_kwargs
+
+        def __call__(self, st, at):
+            progress = 1.0 if self.duration <= 0 else min(1.0, st / self.duration)
+            kerning = self.start_kerning + (self.end_kerning - self.start_kerning) * progress
+            displayable = Text(self.text, kerning=kerning, **self.text_kwargs)
+            return displayable, 0.0 if progress < 1.0 else None
+
+    def widening_credit_text(
+        text,
+        start_kerning=2.0,
+        end_kerning=26.0,
+        duration=2.4,
+        **text_kwargs,
+    ):
+        params = dict(text_kwargs)
+        params.setdefault("layout", "nobreak")
+        callable_obj = _WideningCreditCallable(text, start_kerning, end_kerning, duration, params)
+        return DynamicDisplayable(callable_obj)
 
 
 init python:
@@ -151,17 +184,25 @@ label start:
     with split_enter
     scene black with fade
     play music "audio/intro_music.mp3" fadein 1.5
-    show text "Developed by Knox Emberlyn" at truecenter with dissolve
-    pause 1.8
-    hide text with dissolve
+    show expression widening_credit_text(
+        "Developed By Knox & Bismaya",
+        start_kerning=2.0,
+        end_kerning=20.0,
+        duration=2.0,
+        size=60,
+        font="fonts/Dune_Rise.otf",
+        color="#f5f0e6",
+        outlines=[(4, "#1a0d04", 0, 0)],
+    ) as studio_credit at truecenter with dissolve
+    pause 2.0
+    hide studio_credit with dissolve
 
     # stop music fadeout 1.0
     # $ quick_menu = True
     # $ toggle_quest_tracker_visibility()
     $ notifications_enabled = True
-    # play music "audio/a-robust-crew.mp3" fadein 1.5
-
     scene cg1
+    # play music "audio/a-robust-crew.mp3" fadein 1.5
 
     e "Welcome to Caer Entropy. Before the dignitaries arrive, we capture this overview of the fortress shimmering with fresh wards."
 

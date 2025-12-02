@@ -365,7 +365,7 @@ screen main_menu():
     # add "game_icon.png" xalign 0.5 yalign 0.1 size (512, 512)
 
     text "Ren'Py MINI-GAMES KIT" style "animated_menu_title" at main_menu_vibrate
-    text "Developed by Knox Emberlyn" style "animated_menu_subtitle" slow True slow_cps 25 at main_menu_subtle
+    text "Developed by Bismaya Jyoti Dalei" style "animated_menu_subtitle" slow True slow_cps 25 at main_menu_subtle
 
     vbox:
         align (0.5, 0.8)
