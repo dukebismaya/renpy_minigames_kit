@@ -339,7 +339,13 @@ label start:
             call space_rebellion_minigame
             e "That was a stellar display. We'll log your dogfighting telemetry."
 
+        "Chess Saga - A game of wits and strategy":
+            call chess_saga_minigame
+            e "A fine match. The AI opponent showcases our pathfinding and decision-making modules."
+
         "Skip the diversions for now":
             e "Very well—we can revisit the sigil arrays, serpent drills, grid trials, and pong table whenever the pitch needs more sparkle."
+        
+    e "That concludes our demonstration of Caer Entropy's dynamic data model and mini-game integrations. Thank you for your time."
 
     return
