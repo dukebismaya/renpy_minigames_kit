@@ -10,6 +10,7 @@ A plug-and-play bundle of Ren'Py-friendly minigames meant to spice up visual nov
 - **Snake** – Classic growth gameplay with wrap/edge options for easy tweaking.
 - **Tic-Tac-Toe** – Local multiplayer or simple AI opponent with clean UI hooks.
 - **Space Rebellion** – Wave-based shooter prototype with power-up drops and parallax backgrounds.
+- **Chess Saga** - A game of wits and strategy.
 
 ## Kit Highlights
 - Drop-in ready Ren'Py `.rpy` files plus supporting assets.
